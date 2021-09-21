@@ -25,11 +25,7 @@ def callback(out):
 	global err
 	global found
 	global size
-	
-	BEER_ID = 0
-	size_alpha = 0.6
 	for tag in out.detections:
-		#print(tag.id[0])
 		if tag.id[0] == TAG_ID:
 			twist_msg = Twist()
 			# Pose in camera frame
@@ -70,49 +66,9 @@ def callback(out):
 			ang_speed = K1*np.cos(alpha)*np.sin(alpha)*(1- psi/(LAMBDA*alpha)) + alpha*K2/LAMBDA
 			#print([rho,alpha,psi])
 			print([fwd_speed, ang_speed])
-			'''
-			ang_speed = 0
 			
-			# Pose in sandwich frame (NWU)
-			Rsc = np.matrix([[0, -1, 0], [0,0,-1], [1,0,0]])
-			tag_nwu = np.dot(Rsc,tag_pose).T
-			tag_nwu[2] = 0 						# projection in xy plane
 
-			Rct = quaternion_matrix(q_list)
-			Rct = Rct[0:3,0:3]
-			# Rot between tag and tag_nwu
-			Rttn = np.matrix([[0, -1, 0], [0,0,1], [-1,0,0]])
-			# Rot from sandwich to Tag nwu
-			Rstn = Rsc*Rct*Rttn
-			# Goal direction
-			#print(Rstn)
-			goal_dir = np.dot(Rstn, np.array([1,0,0])).T
-			#print(goal_dir)	
-			goal_dir[2,0] = 0.0
-			theta = np.arctan2(goal_dir[1,0],goal_dir[0,0])
-			
-			dts = -np.dot(Rstn,tag_nwu)
-
-
-			#print(Ry)
-			#print([roll,pitch,yaw])
-			#dts = - np.dot(Ry,tag_pose)
-			#print(dts)
-
-			rho = np.linalg.norm(dts,2)
-			
-			#@alpha = np.arctan2(dts[0,0],dts[0,2]) + np.pi
-			
-			#fi = -pitch
-			#print(dts)
-			fi = np.arctan2(dts[1,0],dts[0,0])
-			alpha = fi - theta
-			#print([alpha,pitch])	
-			fwd_speed = K1*np.cos(alpha)*rho
-			ang_speed = K1*np.sin(alpha)*np.cos(alpha)*(alpha + LAMBDA*fi)/alpha + K2*alpha
-			'''
-
-			if rho < 0.15:
+			if rho < 0.05:
 				fwd_speed = 0.0
 				ang_speed = 0.0
 			fwd_speed = max(-0.3,min(0.3,fwd_speed))
@@ -124,46 +80,6 @@ def callback(out):
 			
 			found = False
 
-# Controllo PI
-def carrello(event):
-	# Posizione orizzontale
-	global err
-	global err_int
-	global found
-	Kp = 0.5
-	Ki = 0
-
-	# Avanzamento:
-	global fwd_err_int
-	global fwd_speed
-	global size	
-	Kp_s = 0.8
-	Ki_s = 0.2
-
-	twist_msg = Twist()
-	if found == True:
-		
-		err_int = err_int + err*DELTA_T
-		angvel = - Kp*err - Ki*err_int
-		angvel =  min(1, max(-1, angvel))
-		twist_msg.angular.z = angvel
-
-		fwd_err = TARGET_SIZE - size
-		fwd_err_int = fwd_err_int + fwd_err*DELTA_T
-		fwd_speed = fwd_err*Kp_s + fwd_err_int*Ki_s
-	else:
-		twist_msg.angular.z = 0.0
-		fwd_speed = fwd_speed*0.7
-
-	twist_msg.linear.x = fwd_speed
-	pub.publish(twist_msg)
-	found = False
-
-def resettatutto(event):
-	global err_int
-	global fwd_err_int
-	err_int = 0
-	fwd_err_int = 0
 
 
 if __name__ == '__main__':
@@ -174,6 +90,4 @@ if __name__ == '__main__':
 	pub = rospy.Publisher("cmd_vel",Twist,queue_size=5)
 
 	rospy.loginfo("started")
-	#rospy.Timer(rospy.Duration(DELTA_T), carrello)
-	#rospy.Timer(rospy.Duration(DELTA_T*15), resettatutto)
 	rospy.spin()
