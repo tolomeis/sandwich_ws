@@ -34,8 +34,8 @@ def callback(out):
 			twist_msg = Twist()
 			# Pose in camera frame
 			pose_list = tag.pose.pose.pose.position
-			tag_pose = np.array([pose_list.x,pose_list.y, pose_list.z])
-			cam2wheel= np.array([0,0.04,-0.145])
+			tag_pose = np.matrix([pose_list.x,pose_list.y, pose_list.z]).T
+			cam2wheel= np.matrix([0,0.04,-0.145]).T
 			tag_pose += cam2wheel
 			tag_pose[1] = 0
 
@@ -53,7 +53,11 @@ def callback(out):
 			theta = np.arctan2(-goal_vect[0],goal_vect[2])
 
 			tag_offset = np.array([0,0,0.25])
-			tag_pose += np.dot(R,tag_offset)
+			print(tag_pose)
+			print(tag_offset)
+			print(np.dot(R,tag_offset))
+			#tag_pose += np.dot(R,tag_offset)
+			
 			
 			rho = np.linalg.norm(tag_pose,2)
 
