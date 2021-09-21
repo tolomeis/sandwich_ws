@@ -1,0 +1,15 @@
+<launch>
+	<arg name="input" default="csi://0"/>
+	<arg name="input_width" default="0"/>
+	<arg name="input_height" default="0"/>
+	<arg name="input_codec" default="unknown"/>
+	<arg name="input_loop" default="0"/>
+
+	<node pkg="sandwich" type="motcontrol.py" name="motcontrol" output="screen">
+		<param name="lin_gain" value="75.0"/>
+		<param name="ang_gain" value="50.0"/>
+	</node>
+	<node pkg="sandwich" type="beer_follower.py" name="beer_follower" output="screen">
+	</node>
+
+</launch>

@@ -1,0 +1,11 @@
+<launch>
+	<node pkg="web_video_server" type="web_video_server" name="web_video_server" output="screen">
+		<param name="quality" value="50"/>
+		<param name="port" value="11315"/>
+	</node>
+
+	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+
+	<node name="http_server" pkg="sandwich_remote" type="bacon.sh" />
+
+</launch>

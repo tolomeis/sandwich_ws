@@ -1,0 +1,8 @@
+<launch>
+	<include file="$(find sandwich)/launch/sandwich.launch"/>
+    <node pkg="image_proc" type="image_proc" name="image_proc" ns="camera" output="screen"/>
+    <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
+        <arg name="camera_name" value="camera"/>
+    </include>
+    <node pkg="sandwich_autonomous" type="apriltag_follow" name="apriltag_follow" output="screen"/>
+</launch>

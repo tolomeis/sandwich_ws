@@ -1,0 +1,26 @@
+<launch>
+	<arg name="input" default="csi://0"/>
+	<arg name="input_width" default="640"/>
+	<arg name="input_height" default="480"/>
+	<arg name="input_codec" default="unknown"/>
+	<arg name="input_loop" default="0"/>
+
+	<node pkg="ros_deep_learning" type="video_source" name="video_source" output="screen">
+		<param name="resource" value="$(arg input)"/>
+		<param name="width" value="$(arg input_width)"/>
+		<param name="height" value="$(arg input_height)"/>
+		<param name="loop" value="$(arg input_loop)"/>
+		<param name="framerate" value="30"/>
+		<remap from="/video_source/raw" to="/camera/image_raw"/>
+	</node>
+	
+	<node pkg="sandwich" type="motcontrol.py" name="motcontrol" output="screen">
+		<param name="lin_gain" value="50.0"/>
+		<param name="ang_gain" value="50.0"/>
+	</node>
+
+	<include file="$(find sandwich_remote)/launch/bacon.launch"/>
+
+	<node pkg="sandwich" type="camera_info_pub.py" name="camerainfo" output="screen"/>
+
+</launch>
