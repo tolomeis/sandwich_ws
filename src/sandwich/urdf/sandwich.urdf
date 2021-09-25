@@ -2,12 +2,15 @@
 <robot name="sandwich">
 
 	<!-- * * * Link Definitions * * * -->
+	<link name="base_link">
+	</link>
 
-	 <link name="base_link">
+	<link name="batt_link">
 		<visual>
 			<geometry>
-				<box size="0.20 0.09 0.03"/>
+				<box size="0.19 0.09 0.03"/>
 			</geometry>
+			<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
 			<material name="white">
 				   <color rgba="1.0 1.0 1.0 1.0"/>
 			</material>
@@ -17,7 +20,7 @@
 	<link name="right_wheel">
 		<visual>
 			<geometry>
-				<mesh filename="package://sandwich/meshes/pololu_wheel.stl" scale = "0.001 0.001 0.001"/>
+				<cylinder length="0.005" radius="0.035"/>
 			</geometry>
 			<origin rpy="1.57 0.0 0.0" xyz="0.0 0.0 0.0"/>
 			<material name="black">
@@ -29,7 +32,7 @@
 	<link name="left_wheel">
 		<visual>
 			<geometry>
-				<mesh filename="package://sandwich/meshes/pololu_wheel.stl" scale = "0.001 0.001 0.001"/>
+				<cylinder length="0.005" radius="0.035"/>
 			</geometry>
 			<origin rpy="-1.57 0.0 0.0" xyz="0.0 0.0 0.0"/>
 			<material name="black">
@@ -38,18 +41,39 @@
 		</visual> 
 	</link>
 
+	<link name="camera">
+		<visual>
+			<geometry>
+				<cylinder length="0.01" radius="0.01"/>
+			</geometry>
+			<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+			<material name="black">
+			</material>
+		</visual> 
+	</link>
+
+	<joint name="base_link_to_batt_link" type="fixed">
+		<parent link="base_link"/>
+		<child link="batt_link"/>
+		<origin xyz="0.045 0.0 0.025"/>
+	</joint>
 
 	<joint name="base_link_to_right_wheel" type="fixed">
 		<parent link="base_link"/>
 		<child link="right_wheel"/>
-		<origin xyz="-0.045 -0.05 -0.025"/>
+		<origin xyz="0.0 -0.05 0.0"/>
 	</joint>
 
 	<joint name="base_link_to_left_wheel" type="fixed">
 		<parent link="base_link"/>
 		<child link="left_wheel"/>
-		<origin xyz="-0.045 0.05 -0.025"/>
+		<origin xyz="0.0 0.05 0.0"/>
 	</joint>
 
+	<joint name="base_link_to_camera" type="fixed">
+		<parent link="base_link"/>
+		<child link="camera"/>
+		<origin xyz="0.145 0.0 0.041" rpy="-1.57 0.0 -1.57" />
+	</joint>
 
 </robot>

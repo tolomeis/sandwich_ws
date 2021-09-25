@@ -1,15 +1,10 @@
 <launch>
 
-	<node pkg="sandwich" type="cheese_ad.py" name="cheese_ad" output="screen"/>
+	<node pkg="sandwich_autonomous" type="cheese_ad.py" name="cheese_ad" output="screen"/>
 	
-
-
 	<node pkg="sandwich" type="motcontrol.py" name="motcontrol" output="screen">
 		<param name="lin_gain" value="75.0"/>
 		<param name="ang_gain" value="40.0"/>
 	</node>
-
-
-
 
 </launch>
