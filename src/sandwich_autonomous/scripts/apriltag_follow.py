@@ -14,12 +14,14 @@ DELTA_T = 0.06
 TARGET_DIST = 0
 TAG_ID = 2
 
-K1 = 1.3
+K1 = 1.2
 K2 = 0.001
-LAMBDA = 1
+LAMBDA = 1.0	
 
 MAX_FWD_SPEED = 0.35
 MAX_ANG_SPEED = 0.35
+
+MIN_DIST = 0.1
 
 def callback(out):
 	global fwd_speed
@@ -50,7 +52,7 @@ def callback(out):
 			goal_vect[1] = 0
 
 			tag_offset = np.matrix([0,0,0.02]).T
-			#tag_pose += R*tag_offset
+			tag_pose += R*tag_offset
 			tag_pose[1] = 0
 
 			theta = np.arctan2(-goal_vect[0],goal_vect[2])
@@ -72,7 +74,7 @@ def callback(out):
 			#print([fwd_speed, ang_speed])
 			
 
-			if rho < 0.1:
+			if MIN_DIST < 0.1:
 				fwd_speed = 0.0
 				ang_speed = 0.0
 			fwd_speed = max(-MAX_FWD_SPEED,min(MAX_FWD_SPEED,fwd_speed))

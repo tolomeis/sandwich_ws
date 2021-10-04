@@ -12,7 +12,7 @@ from rospy.core import NullHandler
 # Parameters to scale the motors speed.
 lin_gain = 100
 ang_gain = 100
-
+max_speed = 50
 dead_zone = 12
 
 # Connection to the RPI Pico
@@ -29,19 +29,19 @@ def callback(velMsg):
 	# Compute the desired speed for each motor, using the gains
 	vdx = (velMsg.linear.x)*lin_gain		# Using the linear velocity
 	vsx = vdx
-	vdx += velMsg.angular.z*ang_gain		# And the angular velocity
-	vsx -= velMsg.angular.z*ang_gain
+	vdx -= velMsg.angular.z*ang_gain		# And the angular velocity
+	vsx += velMsg.angular.z*ang_gain
 	
 	vsx = vsx + np.sign(vsx)*dead_zone				# Add offset to compensate dead zone
 	vdx = vdx + np.sign(vdx)*dead_zone
 
-	vsx = min(100, max(-100, vsx))			#Constrain the values between 100% and -100%
-	vdx = min(100, max(-100, vdx))	
-	# rospy.loginfo("requested vdx=%d, vsx=%d", vdx, vsx)
+	vsx = min(max_speed, max(-max_speed, vsx))			#Constrain the values between 100% and -100%
+	vdx = min(max_speed, max(-max_speed, vdx))	
+	#rospy.loginfo("requested vdx=%d, vsx=%d", vdx, vsx)
 	
 	pico.write('s'.encode()) 				# 's' is the start character for code running in the PICO
-	pico.write(struct.pack("b",-vdx))		# Sends left and right speed, encoding in 1 byte signed
-	pico.write(struct.pack("b",vsx))		# (send minus for wiring compatibility)
+	pico.write(struct.pack("b",vdx))		# Sends left and right speed, encoding in 1 byte signed
+	pico.write(struct.pack("b",-vsx))		# (send minus for wiring compatibility)
 
 
 def stop():

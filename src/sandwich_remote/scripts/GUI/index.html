@@ -54,14 +54,19 @@
 
 		window.onload = function () {
 		createJoystick();
+		app.ip = location.host.slice(0,-5)
 		}
 
 		// load the camera stream as an image, with the right IP address (from the wp_address input box)
 		//port 11315 and topic /video_source/raw are fixed.
-		//TODO: make port, topic and parameters dynamic via input boxes
+		//TODO: make port, topic and parameters dynamic via input boxes  315/stream?topic=/camera/image_raw&width=960&height=720&quality=50" class="w3-image" style="width:100%;max-width:960px width="960" height="720"/>'
 		loadCamera = function(){
-			document.getElementById('cam').innerHTML = '<img src="http://' + app.ws_address.slice(5,-5) + ':11315/stream?topic=/video_source/raw&width=960&height=720&quality=50" class="w3-image" style="width:100%;max-width:960px width="960" height="720"/>';
+			document.getElementById('cam').innerHTML = '<img src="http://' + app.ip + ':11315/stream?topic='+app.cam_topic + '" class="w3-image" style="width:100%;max-width:960px width="960" height="720"/>';
 			app.cstarted = true;
+		}
+		stopCamera = function(){
+			document.getElementById('cam').innerHTML = '<br/>';
+			app.cstarted = false;
 		}
 	</script>
 
@@ -76,33 +81,38 @@
 	<!-- Main Row containing the control web app. With w3-row it is responsive! -->
 	<div id="app" class="w3-row-padding w3-mobile">
 		<!-- First column: placeholder for the camera image -->
-		<div class="w3-col m6">
+		<div class="w3-col m6 w3-cell">
 			<div id="cam"></div>
 			<br/>
 		</div>
 		<!-- Second column: the joystick. TODO: fix  thefilmsy position-->
-		<div class="w3-col m3 w3-mobile">
+		<div class="w3-col m3 w3-mobile w3-padding w3-cell">
 			<br/>
 			<br/>
 			<br/>
 			<br/>
+			
 			<div id="zone_joystick" style="position: relative;"></div>
 		</div>
 
 		<!-- Third column: IP address input box and buttons. USING VUE-->
-		<div class="w3-col m3 13 w3-padding">
+		<div class="w3-col m3 13 w3-padding w3-cell">
 			<p class="text-success" v-if="connected">Connected!</p>
 			<p class="text-danger" v-else>Not connected!</p>
 
 			<label>Sandwich address</label>
-			<input class="w3-input w3-border w3-border-orange w3-round" type="text" v-model="ws_address" />
+			<input class="w3-input w3-border w3-border-orange w3-round" type="text" v-model="ip" />
 			<br/>
 
 			<button @click="disconnect" class="w3-button w3-center w3-border-orange w3-round" v-if="connected">Disconnect!</button>
 			<button @click="connect" class="w3-button w3-border w3-center w3-border-orange w3-round" v-else>Connect!</button>
 			
-			<button class="w3-button w3-disabled w3-border w3-border-orange w3-round" v-if="cstarted">Started</button>
+			<button @click="stopCamera" class="w3-button w3-border w3-border-orange w3-round" v-if="cstarted">Stop Camera</button>
 			<button @click="loadCamera" class="w3-button w3-border w3-border-orange w3-round" v-else>Start Camera</button>
+			<br/>
+			
+			<label>Camera topic</label>
+			<input class="w3-input w3-border w3-border-orange w3-round" type="text" v-model="cam_topic" />
 		</div>
 		
 	</div>

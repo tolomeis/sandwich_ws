@@ -1,20 +1,6 @@
 	<launch>
 
-
-	<!-- VIDEO SOURCE -->
-	<arg name="input" default="csi://0"/>
-	<arg name="input_width" default="0"/>
-	<arg name="input_height" default="0"/>
-	<arg name="input_codec" default="unknown"/>
-	<arg name="input_loop" default="0"/>
-
-	<include file="$(find ros_deep_learning)/launch/video_source.ros1.launch">
-		<arg name="input" value="$(arg input)"/>
-		<arg name="input_width" value="$(arg input_width)"/>
-		<arg name="input_height" value="$(arg input_height)"/>
-		<arg name="input_codec" value="$(arg input_codec)"/>
-		<arg name="input_loop" value="$(arg input_loop)"/>
-	</include>
+	<arg name="input_topic" default="/video_source/raw"/>
 
 	<!-- SEGNET -->
 	<arg name="model_name" default="fcn-resnet18-sun-640x512"/>
@@ -29,7 +15,7 @@
 	<arg name="overlay_alpha" default="180.0"/>
 
 	<node pkg="ros_deep_learning" type="segnet" name="segnet" output="screen">
-		<remap from="/segnet/image_in" to="/video_source/raw"/>
+		<remap from="/segnet/image_in" to="$(arg input_topic)"/>
 		<param name="model_name" value="$(arg model_name)"/>
 		<param name="model_path" value="$(arg model_path)"/>	
 		<param name="prototxt_path" value="$(arg prototxt_path)"/>
@@ -42,12 +28,7 @@
 		<param name="overlay_alpha" value="$(arg overlay_alpha)"/>
 	</node>
 
-    <node pkg="web_video_server" type="web_video_server" name="web_video_server" output="screen">
-		<param name="quality" value="50"/>
-		<param name="port" value="11315"/>
-	</node>
 
-	<node pkg="sandwich" type="camera_info_pub.py" name="camerainfo" output="screen"/>
 
 
 </launch>

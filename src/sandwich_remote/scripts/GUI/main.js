@@ -5,7 +5,9 @@ var app = new Vue({
         connected: false,
 		cstarted: false,
         ros: null,
-        ws_address: 'ws://192.168.1.203:9090',
+        ip: '192.168.1.203',
+        ws_address: 'ws://' + this.ip + ':9090',
+        cam_topic: 'camera/image_rect_color',
         logs: [],
     },
     // helper methods to connect to ROS
@@ -13,7 +15,7 @@ var app = new Vue({
         connect: function() {
             this.logs.unshift('connect to rosbridge server!!')
             this.ros = new ROSLIB.Ros({
-                url: this.ws_address
+                url: 'ws://' + this.ip + ':9090'
             })
             this.ros.on('connection', () => {
                 this.connected = true

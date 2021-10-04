@@ -24,6 +24,7 @@
 	<include file="$(find sandwich_remote)/launch/bacon.launch"/>
 
 	<node pkg="sandwich" type="camera_info_pub.py" name="camerainfo" output="screen"/>
+	<node pkg="image_proc" type="image_proc" name="image_proc" ns="camera" output="screen"/>
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
 </launch>
