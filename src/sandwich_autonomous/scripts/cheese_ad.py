@@ -23,6 +23,9 @@ h_class = 16
 MAX_ANG_SPEED = 0.4
 MAX_FWD_SPEED = 0.4
 
+MAX_FLOOR_H = 6
+W_SCALE = 1
+
 def callback(mask_img):
 	global fwd_speed 
 	global ang_speed
@@ -37,11 +40,19 @@ def callback(mask_img):
 	floormat = cv2.inRange(cv_image,FLOOR_ID,FLOOR_ID)
 
 	floor_class = cv2.resize(floormat,(w_class,h_class),interpolation=cv2.INTER_AREA)/255
+	floormat = floor_class
 
-	floormat[0:6,:] = np.zeros([w,6]).T 
-
+	# OpenCV: img[x,y] with 
+	#	(0,0) 	--> (x)
+	#			|
+	#			v
+	#			(y)
+	floormat[0:MAX_FLOOR_H,:] = np.zeros([MAX_FLOOR_H,w_class])
 	
-	M = cv2.moments(floormat)
+	weights = np.flip(np.matrix(range(1,MAX_FLOOR_H+1))*W_SCALE)*np.ones(1,w_class) 
+
+	floormat = np.multiply(floormat,weights)
+	M = cv2.moments()
 	if M["m00"] != 0:
 		cX = int(M["m10"] / M["m00"])
 		cY = int(M["m01"] / M["m00"])
@@ -49,6 +60,7 @@ def callback(mask_img):
  		cX = w/2
 		cY = 0
 
+	
 	fwd_pixels = np.array(range(7,13))
 	# Metodo 1: conto quadrati occupati
 	fwd_area = np.sum(floor_class[fwd_pixels,:])/(6*9)
@@ -97,7 +109,6 @@ def show_dir(raw_img):
 
 	cv_dir = cv2.line(cv_dir, (2,h/2),(2,int(h/2 - fwd_speed*h/(2*MAX_FWD_SPEED))), (0,0,255),4)
 
-	#cv_dir = cv2.rectangle(cv_dir,(7*64,719),(13*64,720-9*45),(0,0,255),3)
 	imgpub.publish(bridge.cv2_to_imgmsg(cv_dir, encoding="bgr8"))
 
 
