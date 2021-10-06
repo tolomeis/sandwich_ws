@@ -1,6 +1,6 @@
 	<launch>
 
-	<arg name="input_topic" default="/video_source/raw"/>
+	<arg name="input_topic" default="/camera/image_rect_color"/>
 
 	<!-- SEGNET -->
 	<arg name="model_name" default="fcn-resnet18-sun-640x512"/>

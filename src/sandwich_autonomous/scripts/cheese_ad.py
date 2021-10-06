@@ -20,39 +20,44 @@ setX = 640.0
 setArea = 0.3
 w_class = 20
 h_class = 16
-MAX_ANG_SPEED = 0.4
+MAX_ANG_SPEED = 0.35
 MAX_FWD_SPEED = 0.4
 
 MAX_FLOOR_H = 6
 W_SCALE = 1
+floorline = None
+
 
 def callback(mask_img):
 	global fwd_speed 
 	global ang_speed
 	global cX
 	global cY
+	global floorline
 	w = mask_img.width
 	h = mask_img.height
 	cv_image = bridge.imgmsg_to_cv2(mask_img, desired_encoding='passthrough')
 	setX = w/2
 	floor_max_h = h*0.7
 	
-	floormat = cv2.inRange(cv_image,FLOOR_ID,FLOOR_ID)
+	floormat = cv2.inRange(cv_image,FLOOR_ID,FLOOR_ID)/255
 
-	floor_class = cv2.resize(floormat,(w_class,h_class),interpolation=cv2.INTER_AREA)/255
-	floormat = floor_class
+	#floormat = floor_class
 
 	# OpenCV: img[x,y] with 
 	#	(0,0) 	--> (x)
 	#			|
 	#			v
 	#			(y)
-	floormat[0:MAX_FLOOR_H,:] = np.zeros([MAX_FLOOR_H,w_class])
+	floormat[0:int(MAX_FLOOR_H*h/h_class),:] = np.zeros([int(MAX_FLOOR_H*h/h_class),w])
 	
-	weights = np.flip(np.matrix(range(1,MAX_FLOOR_H+1))*W_SCALE)*np.ones(1,w_class) 
+	weights = np.flip(np.matrix(range(0,h)).T*W_SCALE, 0)*np.ones([1,w])
 
 	floormat = np.multiply(floormat,weights)
-	M = cv2.moments()
+
+	# floorline = np.argmax(cv2.resize(floormat,(w_class,h_class),interpolation=cv2.INTER_AREA),0)
+	
+	M = cv2.moments(floormat)
 	if M["m00"] != 0:
 		cX = int(M["m10"] / M["m00"])
 		cY = int(M["m01"] / M["m00"])
@@ -60,6 +65,7 @@ def callback(mask_img):
  		cX = w/2
 		cY = 0
 
+	floor_class = cv2.resize(floormat,(w_class,h_class),interpolation=cv2.INTER_AREA)/255
 	
 	fwd_pixels = np.array(range(7,13))
 	# Metodo 1: conto quadrati occupati
@@ -80,8 +86,8 @@ def callback(mask_img):
 
 	fwd_alpha = 0.5
 	ang_alpha = 0.3
-	Kp_fwd = 8.0
-	Kp_ang = 2.0
+	Kp_fwd = 1.0
+	Kp_ang = 3.0
 	Ki_ang = 1.0
 	Ki_fwd = 1.0
 
@@ -99,17 +105,33 @@ def callback(mask_img):
 	pub.publish(twist_msg)
 
 
+	#cv_image = cv2.circle(cv_image,(cX,cY), 20, 255, 3)
+	#cv_image = cv2.line(cv_image, (w/2,2),(int(w/2 - ang_speed*w/(2*MAX_ANG_SPEED)),2), 255,4)
+
+	#cv_image = cv2.line(cv_image, (2,h/2),(2,int(h/2 - fwd_speed*h/(2*MAX_FWD_SPEED))), 255,4)
+	#imgpub.publish(bridge.cv2_to_imgmsg(floormat, encoding="passthrough"))
+
+
+
+
 def show_dir(raw_img):
 	cv_image = bridge.imgmsg_to_cv2(raw_img, desired_encoding='passthrough')
 	w = raw_img.width
 	h = raw_img.height
 
-	cv_dir = cv2.circle(cv_image,(cX,cY), 20, (0, 0, 255), 3)
-	cv_dir = cv2.line(cv_dir, (w/2,2),(int(w/2 - ang_speed*w/(2*MAX_ANG_SPEED)),2), (0,0,255),4)
+	# pts = np.zeros([w_class,2])
+	# pts(:,0) = floor_x
+	# floor_x = np.matrix(range(0,w,int(w/w_class)))
+	# pts = 
+	# print(pts)
+	# cv_image = cv2.polylines(cv_image, pts.T ,0,(0,0,255),2)
 
-	cv_dir = cv2.line(cv_dir, (2,h/2),(2,int(h/2 - fwd_speed*h/(2*MAX_FWD_SPEED))), (0,0,255),4)
+	cv_image = cv2.circle(cv_image,(cX,cY), 20, (0, 0, 255), 3)
+	cv_image = cv2.line(cv_image, (w/2,2),(int(w/2 - ang_speed*w/(2*MAX_ANG_SPEED)),2), (0,0,255),4)
 
-	imgpub.publish(bridge.cv2_to_imgmsg(cv_dir, encoding="bgr8"))
+	cv_image = cv2.line(cv_image, (2,h/2),(2,int(h/2 - fwd_speed*h/(2*MAX_FWD_SPEED))), (0,0,255),4)
+
+	imgpub.publish(bridge.cv2_to_imgmsg(cv_image, encoding="bgr8"))
 
 
 
