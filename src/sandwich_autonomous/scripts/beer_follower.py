@@ -43,14 +43,14 @@ def carrello(event):
 	global err
 	global err_int
 	global found
-	Kp = 0.5
+	Kp = 0.7
 	Ki = 0
 
 	# Avanzamento:
 	global fwd_err_int
 	global fwd_speed
 	global size	
-	Kp_s = 0.8
+	Kp_s = 1.0
 	Ki_s = 0.2
 
 	twist_msg = Twist()

@@ -13,8 +13,8 @@ from rospy.names import valid_name
 # Parameters to scale the motors speed.
 lin_gain = 100
 ang_gain = 100
-max_speed = 50
-dead_zone = 5
+max_speed = 100	
+dead_zone = 7
 vlin = 0.0
 vang = 0.0
 
@@ -57,7 +57,7 @@ def send2pico(event):
 
 	vsx = min(max_speed, max(-max_speed, vsx))			#Constrain the values between 100% and -100%
 	vdx = min(max_speed, max(-max_speed, vdx))	
-	rospy.loginfo("requested vdx=%d, vsx=%d", vdx, vsx)
+	#rospy.loginfo("requested vdx=%d, vsx=%d", vdx, vsx)
 	
 	pico.write('s'.encode()) 				# 's' is the start character for code running in the PICO
 	pico.write(struct.pack("b",vdx))		# Sends left and right speed, encoding in 1 byte signed
@@ -79,8 +79,9 @@ if __name__ == '__main__':
 	GPIO.setup(7, GPIO.OUT, initial=GPIO.LOW)
 
 	rospy.init_node('motcontrol', anonymous=False)		# ROS node init
-	lin_gain = rospy.get_param('~lin_gain', 50)			# parameters init
-	ang_gain = rospy.get_param('~ang_gain', 50)
+	lin_gain = rospy.get_param('~lin_gain', 60)			# parameters init
+	ang_gain = rospy.get_param('~ang_gain', 60)
+	max_speed = rospy.get_param('~max_speed', 80)
 	rospy.loginfo("%s is %s", rospy.resolve_name('~lin_gain'), lin_gain)	# log parameters value, using the resolve_name trick
 	rospy.loginfo("%s is %s", rospy.resolve_name('~ang_gain'), ang_gain) 
 	rospy.Subscriber("cmd_vel", Twist, updatevel)		# subscribe to topic

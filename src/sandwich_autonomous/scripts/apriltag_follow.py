@@ -11,17 +11,20 @@ ang_speed = 0.0
 
 
 DELTA_T = 0.06
-TARGET_DIST = 0
+#TARGET_DIST = 0.015
+TARGET_DIST = 0.0
+
+TAG_ID = 4 #tag su nanosaur
 TAG_ID = 2
 
-K1 = 1.2
+K1 = 1.5
 K2 = 0.001
-LAMBDA = 1.0	
+LAMBDA = 1.0e10	
 
 MAX_FWD_SPEED = 0.35
 MAX_ANG_SPEED = 0.35
 
-MIN_DIST = 0.1
+MIN_DIST = 0.2
 
 def callback(out):
 	global fwd_speed
@@ -51,7 +54,7 @@ def callback(out):
 			goal_vect = R*np.matrix([0,0,-1]).T
 			goal_vect[1] = 0
 
-			tag_offset = np.matrix([0,0,0.02]).T
+			tag_offset = np.matrix([0,0,TARGET_DIST]).T
 			tag_pose += R*tag_offset
 			tag_pose[1] = 0
 
@@ -74,7 +77,7 @@ def callback(out):
 			#print([fwd_speed, ang_speed])
 			
 
-			if MIN_DIST < 0.1:
+			if rho < MIN_DIST:
 				fwd_speed = 0.0
 				ang_speed = 0.0
 			fwd_speed = max(-MAX_FWD_SPEED,min(MAX_FWD_SPEED,fwd_speed))

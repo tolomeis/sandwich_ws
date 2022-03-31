@@ -1,7 +1,5 @@
 <launch>
 
-	<include file="$(find sandwich)/launch/sandwich.launch"/>
-	
 	<include file="$(find sandwich_autonomous)/launch/segnet.launch"/>
 
 	<node pkg="sandwich_autonomous" type="cheese_ad.py" name="cheese_ad" output="screen"/>

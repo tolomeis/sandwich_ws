@@ -5,6 +5,10 @@
 	<arg name="input_codec" default="unknown"/>
 	<arg name="framerate" default="30"/>
 
+	<arg name="lin_gain" default="60"/>
+	<arg name="ang_gain" default="40"/>
+	<arg name="max_spd" default="60"/>
+
 	<param name="robot_description" command="cat $(find sandwich)/urdf/sandwich.urdf" />
 
 	<node pkg="ros_deep_learning" type="video_source" name="video_source" output="screen">
@@ -17,8 +21,9 @@
 	</node>
 	
 	<node pkg="sandwich" type="motcontrol.py" name="motcontrol" output="screen">
-		<param name="lin_gain" value="50.0"/>
-		<param name="ang_gain" value="50.0"/>
+		<param name="lin_gain" value="$(arg lin_gain)"/>
+		<param name="ang_gain" value="$(arg ang_gain)"/>
+		<param name="max spd" value="$(arg max_spd)"/>
 	</node>
 
 	<include file="$(find sandwich_remote)/launch/bacon.launch"/>

@@ -4,14 +4,11 @@
     <rosparam command="load" file="$(find sandwich_autonomous)/configs/tags.yaml" />
 
 
-	<include file="$(find sandwich)/launch/sandwich.launch">
-        <arg name="framerate" value="60"/>
-    </include>
+	
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
         <arg name="camera_name" value="camera"/>
     </include>
 
 
-    <node pkg="image_proc" type="image_proc" name="image_proc" ns="camera" output="screen"/>
     <node if="$(arg follow)" pkg="sandwich_autonomous" type="apriltag_follow.py" name="apriltag_follow" output="screen"/>
 </launch>

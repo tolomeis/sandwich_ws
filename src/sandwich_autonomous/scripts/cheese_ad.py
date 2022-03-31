@@ -17,7 +17,7 @@ cX = 0
 cY = 0
 #setY = 620.0
 setX = 640.0
-setArea = 0.3
+setArea = 0.35
 w_class = 20
 h_class = 16
 MAX_ANG_SPEED = 0.35
@@ -84,10 +84,10 @@ def callback(mask_img):
 	ang_err = (float(setX) - cX)/float(w)
 
 
-	fwd_alpha = 0.5
-	ang_alpha = 0.3
-	Kp_fwd = 1.0
-	Kp_ang = 3.0
+	fwd_alpha = 0.0
+	ang_alpha = 0.5
+	Kp_fwd = 1.5
+	Kp_ang = 2.0
 	Ki_ang = 1.0
 	Ki_fwd = 1.0
 
