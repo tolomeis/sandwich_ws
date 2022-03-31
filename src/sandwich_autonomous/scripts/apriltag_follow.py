@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PoseStamped
+
 from apriltag_ros.msg import AprilTagDetectionArray
 from tf.transformations import euler_from_quaternion, quaternion_matrix
 import numpy as np
@@ -14,8 +15,8 @@ DELTA_T = 0.06
 #TARGET_DIST = 0.015
 TARGET_DIST = 0.0
 
-TAG_ID = 4 #tag su nanosaur
-TAG_ID = 2
+
+TAG_ID = 1
 
 K1 = 1.5
 K2 = 0.001
@@ -25,6 +26,17 @@ MAX_FWD_SPEED = 0.35
 MAX_ANG_SPEED = 0.35
 
 MIN_DIST = 0.2
+
+def draw_tag(pos, q):
+	ax = PoseStamped()
+	ax.header.stamp = rospy.get_time()
+	ax.header.frame_id = 'camera'
+	ax.pose.position.x = pos[0]
+	ax.pose.position.y = pos[1]
+	ax.pose.position.z = pos[2]
+	ax.pose.orientation = q
+	tag_pub.publish(ax)
+
 
 def callback(out):
 	global fwd_speed
@@ -36,34 +48,39 @@ def callback(out):
 			# Pose in camera frame
 			pose_list = tag.pose.pose.pose.position
 			tag_pose = np.matrix([pose_list.x,pose_list.y, pose_list.z]).T
+
+			# Offset between camera and wheel_base
 			wheel_2_cam= np.matrix([0,-0.04,0.145]).T
 			tag_pose += wheel_2_cam
-			tag_pose[1] = 0
+			tag_pose[1] = 0 	# 2D scenario, neglet y (down) coordinate
 
 			
 			# Orientation between camera frame and tag
 			q = tag.pose.pose.pose.orientation
 			q_list = [q.x, q.y, q.z, q.w]
 			(roll, pitch, yaw) = euler_from_quaternion(q_list)
-
 			Rz = np.matrix([[np.cos(yaw), -np.sin(yaw), 0],[np.sin(yaw), np.cos(yaw), 0], [0,0,1]])
 			Ry = np.matrix([[np.cos(pitch), 0, np.sin(pitch)], [0,1,0],[-np.sin(pitch), 0, np.cos(pitch)]])
 			Rx = np.matrix([[1,0,0], [0, np.cos(roll), -np.sin(roll)], [0, np.sin(roll), np.cos(roll)]])
 			R = (Rz*Ry)*Rx
 
+			# Goal direction is along the negative Z axis of the tag
 			goal_vect = R*np.matrix([0,0,-1]).T
 			goal_vect[1] = 0
-
+			
+			# Set goal position further away from the tag in the Z axis (outward from the tag plane)
 			tag_offset = np.matrix([0,0,TARGET_DIST]).T
 			tag_pose += R*tag_offset
 			tag_pose[1] = 0
 
+
+			# Angle between goal direction and robot frame
 			theta = np.arctan2(-goal_vect[0],goal_vect[2])
 
-			
-			
+			# distance from the tag
 			rho = np.linalg.norm(tag_pose,2)
 
+			
 			alpha = np.arctan2(-tag_pose[0], tag_pose[2])
 			
 			psi = -(alpha - theta)
@@ -73,8 +90,8 @@ def callback(out):
 			fwd_speed = K1*rho*np.cos(alpha)
 
 			ang_speed = K1*np.cos(alpha)*np.sin(alpha)*(1- psi/(LAMBDA*alpha)) + alpha*K2/LAMBDA
-			#print([rho,alpha,psi])
-			#print([fwd_speed, ang_speed])
+			print([rho,alpha,psi])
+			print([fwd_speed, ang_speed])
 			
 
 			if rho < MIN_DIST:
@@ -82,6 +99,8 @@ def callback(out):
 				ang_speed = 0.0
 			fwd_speed = max(-MAX_FWD_SPEED,min(MAX_FWD_SPEED,fwd_speed))
 			ang_speed = max(-MAX_ANG_SPEED, min(MAX_ANG_SPEED,ang_speed))
+		else:
+			rospy.loginfo(tag.id[0])
 
 	s = np.shape(out.detections)
 	if s[0] == 0:
@@ -107,6 +126,7 @@ if __name__ == '__main__':
 	rospy.Subscriber("/tag_detections", AprilTagDetectionArray, callback)
 	pub = rospy.Publisher("cmd_vel",Twist,queue_size=5)
 	
+	tag_pub = rospy.Publisher("target_position", PoseStamped, queue_size=10)
 	rospy.on_shutdown(stop)
 
 	rospy.loginfo("started")

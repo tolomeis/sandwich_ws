@@ -3,8 +3,6 @@
 
     <rosparam command="load" file="$(find sandwich_autonomous)/configs/tags.yaml" />
 
-
-	
     <include file="$(find apriltag_ros)/launch/continuous_detection.launch">
         <arg name="camera_name" value="camera"/>
     </include>

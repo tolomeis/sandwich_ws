@@ -1,6 +1,8 @@
-standalone_tags:
-  [
-     {id: 1, size: 0.08, name: tag1},
-     {id: 2, size: 0.08, name: tag2},
-     {id: 4, size: 0.03, name: tag2}
-  ]
+apriltag_ros_continuous_node:
+   camera_frame: camera
+   standalone_tags:
+      [
+         {id: 1, size: 0.08, name: tag1},
+         {id: 2, size: 0.08, name: tag2},
+         {id: 4, size: 0.03, name: tag3}
+      ]
