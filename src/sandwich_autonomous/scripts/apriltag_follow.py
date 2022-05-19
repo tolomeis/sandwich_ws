@@ -19,8 +19,8 @@ TARGET_DIST = 0.0
 TAG_ID = 1
 
 K1 = 1.5
-K2 = 0.001
-LAMBDA = 1.0e10	
+K2 = 1.0
+LAMBDA = 1.0	
 
 MAX_FWD_SPEED = 0.35
 MAX_ANG_SPEED = 0.35
@@ -88,8 +88,11 @@ def callback(out):
 			
 			# LYAPUNOV CONTROL
 			fwd_speed = K1*rho*np.cos(alpha)
+			if np.abs(alpha) > 0.01:
+				ang_speed = K1*np.cos(alpha)*np.sin(alpha)*(1- psi/(LAMBDA*alpha)) + alpha*K2/LAMBDA
+			else:
+				ang_speed = K1*np.sin(alpha)*(alpha- psi/LAMBDA) + alpha*K2/LAMBDA
 
-			ang_speed = K1*np.cos(alpha)*np.sin(alpha)*(1- psi/(LAMBDA*alpha)) + alpha*K2/LAMBDA
 			print([rho,alpha,psi])
 			print([fwd_speed, ang_speed])
 			
