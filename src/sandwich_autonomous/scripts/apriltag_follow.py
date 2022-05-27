@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from geometry_msgs.msg import Twist, PoseStamped
+from geometry_msgs.msg import Twist, PoseStamped, Vector3
 
 from apriltag_ros.msg import AprilTagDetectionArray
 from tf.transformations import euler_from_quaternion, quaternion_matrix
@@ -19,11 +19,11 @@ TARGET_DIST = 0.0
 TAG_ID = 1
 
 K1 = 1.5
-K2 = 1.0
+K2 = 0.6
 LAMBDA = 1.0	
 
-MAX_FWD_SPEED = 0.35
-MAX_ANG_SPEED = 0.35
+MAX_FWD_SPEED = 0.5
+MAX_ANG_SPEED = 0.4
 
 MIN_DIST = 0.2
 
@@ -37,6 +37,12 @@ def draw_tag(pos, q):
 	ax.pose.orientation = q
 	tag_pub.publish(ax)
 
+def pub_values(rho, alpha, phi):
+	v = Vector3()
+	v.x = rho
+	v.y = alpha
+	v.z = phi
+	value_pub.publish(v)
 
 def callback(out):
 	global fwd_speed
@@ -84,17 +90,18 @@ def callback(out):
 			alpha = np.arctan2(-tag_pose[0], tag_pose[2])
 			
 			psi = -(alpha - theta)
-			rospy.loginfo(rho)
+			
 			
 			# LYAPUNOV CONTROL
 			fwd_speed = K1*rho*np.cos(alpha)
-			if np.abs(alpha) > 0.01:
+
+			if np.abs(alpha) > 0.02:
 				ang_speed = K1*np.cos(alpha)*np.sin(alpha)*(1- psi/(LAMBDA*alpha)) + alpha*K2/LAMBDA
 			else:
+				rospy.loginfo("Using simplified formula")
 				ang_speed = K1*np.sin(alpha)*(alpha- psi/LAMBDA) + alpha*K2/LAMBDA
 
-			print([rho,alpha,psi])
-			print([fwd_speed, ang_speed])
+			pub_values(rho, alpha, psi)
 			
 
 			if rho < MIN_DIST:
@@ -130,6 +137,7 @@ if __name__ == '__main__':
 	pub = rospy.Publisher("cmd_vel",Twist,queue_size=5)
 	
 	tag_pub = rospy.Publisher("target_position", PoseStamped, queue_size=10)
+	value_pub = rospy.Publisher("target_values", Vector3, queue_size=10)
 	rospy.on_shutdown(stop)
 
 	rospy.loginfo("started")
