@@ -5,9 +5,7 @@
 	<arg name="input_codec" default="unknown"/>
 	<arg name="framerate" default="30"/>
 
-	<arg name="lin_gain" default="60"/>
-	<arg name="ang_gain" default="40"/>
-	<arg name="max_spd" default="60"/>
+	<arg name="max_spd" default="100"/>
 
 	<param name="robot_description" command="cat $(find sandwich)/urdf/sandwich.urdf" />
 
@@ -21,8 +19,8 @@
 	</node>
 	
 	<node pkg="sandwich" type="motcontrol.py" name="motcontrol" output="screen">
-		<param name="lin_gain" value="$(arg lin_gain)"/>
-		<param name="ang_gain" value="$(arg ang_gain)"/>
+		<param name="lin_gain" value="100"/>
+		<param name="ang_gain" value="100"/>
 		<param name="max spd" value="$(arg max_spd)"/>
 	</node>
 
@@ -31,5 +29,15 @@
 	<node pkg="sandwich" type="camera_info_pub.py" name="camerainfo" output="screen"/>
 	<node pkg="image_proc" type="image_proc" name="image_proc" ns="camera" output="screen"/>
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+	<node name="joy_node" type="joy_node" pkg="joy">
+		<param name="dev" value="/dev/input/js0"/>
+		<param name="deadzone" value="0.05"/>
+		<param name="autorepeat_rate" value="0.0"/>
+		<param name="coalesce_interval" value="0.001"/>
+		<param name="default_trig_val" value="true"/>
+		<param name="dev_ff" value="/dev/input/event2"/>
+	</node>
+
+	<node name="joy_teleop" pkg="sandwich_remote" type="joy_teleop"/>
 
 </launch>
