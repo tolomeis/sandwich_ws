@@ -8,5 +8,8 @@
     </include>
 
 
-    <node if="$(arg follow)" pkg="sandwich_autonomous" type="apriltag_follow.py" name="apriltag_follow" output="screen"/>
+    <node if="$(arg follow)" pkg="sandwich_autonomous" type="apriltag_follow.py" name="apriltag_follow" output="screen">
+    	<param name="lin_gain" value="$(arg lin_gain)"/>
+		<param name="ang_gain" value="$(arg ang_gain)"/>
+    </node>
 </launch>

@@ -117,8 +117,8 @@ def callback(out):
 		fwd_speed = 0.8*fwd_speed
 		ang_speed = 0.8*ang_speed
 
-	twist_msg.linear.x = fwd_speed
-	twist_msg.angular.z = ang_speed
+	twist_msg.linear.x = fwd_speed*lin_gain/100.0
+	twist_msg.angular.z = ang_speed*ang_gain/100.0
 	pub.publish(twist_msg)
 
 def stop():
@@ -138,6 +138,8 @@ if __name__ == '__main__':
 	
 	tag_pub = rospy.Publisher("target_position", PoseStamped, queue_size=10)
 	value_pub = rospy.Publisher("target_values", Vector3, queue_size=10)
+	lin_gain = rospy.get_param('~lin_gain', 60)			# parameters init
+	ang_gain = rospy.get_param('~ang_gain', 40)
 	rospy.on_shutdown(stop)
 
 	rospy.loginfo("started")

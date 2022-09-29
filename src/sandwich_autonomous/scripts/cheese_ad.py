@@ -100,8 +100,8 @@ def callback(mask_img):
 	fwd_speed = min(MAX_FWD_SPEED, max(-MAX_FWD_SPEED, fwd_speed))
 	
 	twist_msg = Twist()
-	twist_msg.angular.z = ang_speed
-	twist_msg.linear.x = fwd_speed
+	twist_msg.angular.z = ang_speed*ang_gain/100.0
+	twist_msg.linear.x = fwd_speed*lin_gain/100.0
 	pub.publish(twist_msg)
 
 
@@ -155,7 +155,8 @@ if __name__ == '__main__':
 	rospy.init_node('cheese_autonomous_driving', anonymous=False)
 	rospy.Subscriber("segnet/color_mask", Image, callback)
 	rospy.Subscriber("camera/image_rect_color", Image, show_dir)
-
+	lin_gain = rospy.get_param('~lin_gain', 60)			# parameters init
+	ang_gain = rospy.get_param('~ang_gain', 60)
 	imgpub = rospy.Publisher("floor",Image, queue_size=5)
 	pub = rospy.Publisher("cmd_vel",Twist, queue_size=10)
 	rospy.Timer(rospy.Duration(0.2), rallenta)

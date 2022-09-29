@@ -9,6 +9,7 @@ import numpy as np
 
 from rospy.core import NullHandler
 from rospy.names import valid_name
+from std_srvs.srv import Empty
 
 # Parameters to scale the motors speed.
 lin_gain = 100
@@ -21,7 +22,7 @@ vang = 0.0
 ALPHA = 0.5
 vlin_buff = 0.0
 vang_buff = 0.0
-
+ESTOP = False
 
 # Connection to the RPI Pico
 pico = serial.Serial(
@@ -43,7 +44,7 @@ def send2pico(event):
 	# Compute the desired speed for each motor, using the gains
 	global vlin_buff
 	global vang_buff
-
+	
 	vlin_buff = vlin_buff*ALPHA + (1-ALPHA)*vlin
 	vang_buff = vang_buff*ALPHA + (1-ALPHA)*vang
 
@@ -67,10 +68,38 @@ def stop():
 	pico.write('s'.encode()) 			# 's' is the start character for code running in the PICO
 	pico.write(struct.pack("b",0))		# Sends left and right speed, encoding in 1 byte signed
 	pico.write(struct.pack("b",0))
+	GPIO.output(7,GPIO.HIGH)
 
 def debugPICO(event):
 	while pico.readable():
 		rospy.loginfo(pico.readline())
+
+def stopService(req):
+	global ESTOP
+	pub.unregister()
+	stop()
+	stop()
+	stop()
+	global vlin_buff
+	global vang_buff
+	global vlin
+	global vang
+	vlin = 0.0
+	vang = 0.0
+	vlin_buff = 0.0
+	vang_buff = 0.0
+	ESTOP = True
+	rospy.logwarn("EMERGENCY STOP TRIGGERED")
+	return req
+	
+def clearService(req):
+	global ESTOP, pub, send_timer
+	if ESTOP == True:
+		pub = rospy.Subscriber("cmd_vel", Twist, updatevel)
+		rospy.logwarn("Emergency stop cleared")
+		GPIO.output(7,GPIO.HIGH)	
+		ESTOP = False
+	return req
 
 
 if __name__ == '__main__':
@@ -84,11 +113,13 @@ if __name__ == '__main__':
 	max_speed = rospy.get_param('~max_speed', 80)
 	rospy.loginfo("%s is %s", rospy.resolve_name('~lin_gain'), lin_gain)	# log parameters value, using the resolve_name trick
 	rospy.loginfo("%s is %s", rospy.resolve_name('~ang_gain'), ang_gain) 
-	rospy.Subscriber("cmd_vel", Twist, updatevel)		# subscribe to topic
+	pub = rospy.Subscriber("cmd_vel", Twist, updatevel)		# subscribe to topic
+	estop = rospy.Service('stop_motors', Empty, stopService)
+	restore = rospy.Service('clear_estop', Empty, clearService)
 
 	rospy.on_shutdown(stop)
 	GPIO.output(7,GPIO.HIGH)
-	rospy.Timer(rospy.Duration(0.02), send2pico)
+	send_timer = rospy.Timer(rospy.Duration(0.02), send2pico)
 	rospy.Timer(rospy.Duration(0.1), debugPICO)
 	
 	rospy.loginfo("motcontrol started") 
