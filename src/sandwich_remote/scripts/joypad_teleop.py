@@ -26,18 +26,23 @@ def callback(data):
 	twist.linear.x = L_GAIN*data.axes[4]
 	twist.angular.z = A_GAIN*data.axes[3]
 	pub.publish(twist)
+
+	if data.buttons[0] == 1 and data.buttons[4] == 1:
+		restart_motcontrol()
+		return
+
 	if data.buttons[4] == 1:
 		trigger_estop()
 		return
-	if data.buttons[0] == 1 and data.buttons[2] == 1:
-		restart_motcontrol()
+
 	if data.buttons[7] == 1:
 		start_oba()
+
 	if data.buttons[8] == 1 and data.buttons[6] == 1:
 		rospy.logwarn("SHUTTING DOWN")
-		#os.system('systemctl poweroff') 
-		#subprocess.Popen(['shutdown','-h','now'])
-		#os.system(f'shutdown -h now')
+		subprocess.Popen(['shutdown now'],shell=True)
+
+
 
 def trigger_estop():
 	rospy.wait_for_service('stop_motors')

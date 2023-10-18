@@ -10,7 +10,7 @@ import jetson.utils
 
 bridge = CvBridge()
 FLOOR_ID = (0, 128, 0)
-
+TABLE_ID = (128,128,128)
 fwd_speed = 0.0
 ang_speed = 0.0
 cX = 0
@@ -41,7 +41,11 @@ def callback(mask_img):
 	floor_max_h = h*0.7
 	
 	floormat = cv2.inRange(cv_image,FLOOR_ID,FLOOR_ID)/255
-
+	# floormat = cv2.inRange(cv_image,TABLE_ID,TABLE_ID)/255
+	# tablemat = cv2.inRange(cv_image,TABLE_ID,TABLE_ID)/255
+	# floormat = tablemat + floormat
+	# floormat = cv2.inRange(floormat,0.2,1.0)/255
+	
 	#floormat = floor_class
 
 	# OpenCV: img[x,y] with 
@@ -49,6 +53,7 @@ def callback(mask_img):
 	#			|
 	#			v
 	#			(y)
+
 	floormat[0:int(MAX_FLOOR_H*h/h_class),:] = np.zeros([int(MAX_FLOOR_H*h/h_class),w])
 	
 	weights = np.flip(np.matrix(range(0,h)).T*W_SCALE, 0)*np.ones([1,w])
@@ -62,7 +67,7 @@ def callback(mask_img):
 		cX = int(M["m10"] / M["m00"])
 		cY = int(M["m01"] / M["m00"])
 	else:
- 		cX = w/2
+		cX = w/2
 		cY = 0
 
 	floor_class = cv2.resize(floormat,(w_class,h_class),interpolation=cv2.INTER_AREA)/255
@@ -154,7 +159,7 @@ if __name__ == '__main__':
 	#init ROS node
 	rospy.init_node('cheese_autonomous_driving', anonymous=False)
 	rospy.Subscriber("segnet/color_mask", Image, callback)
-	rospy.Subscriber("camera/image_rect_color", Image, show_dir)
+	rospy.Subscriber("segnet/overlay", Image, show_dir)
 	lin_gain = rospy.get_param('~lin_gain', 60)			# parameters init
 	ang_gain = rospy.get_param('~ang_gain', 60)
 	imgpub = rospy.Publisher("floor",Image, queue_size=5)

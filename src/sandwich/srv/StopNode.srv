@@ -1,0 +1,5 @@
+# Stop Selected Node
+
+string node_name
+---
+bool ret

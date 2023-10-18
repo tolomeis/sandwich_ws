@@ -39,5 +39,5 @@
 	</node>
 
 	<node name="joy_teleop" pkg="sandwich_remote" type="joy_teleop"/>
-
+	<node name="node_manager" pkg="sandwich" type="node_manager.py"/>
 </launch>

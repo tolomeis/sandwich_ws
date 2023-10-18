@@ -5,14 +5,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <std_srvs/Empty.h>
+#include <sandwich/LaunchNode.h>
+#include <sandwich/StopNode.h>
 
 geometry_msgs::Twist twist;
 
-bool publish=false;
+bool publish = false;
 double L_GAIN;
 double A_GAIN;
 ros::ServiceClient stopclient;
+ros::ServiceClient nodestart_client;
+ros::ServiceClient nodestop_client;
 std_srvs::Empty srv;
+
+bool autonomous_active = false;
 
 void joyCallback(const sensor_msgs::Joy::ConstPtr& msg){
 
@@ -38,7 +44,22 @@ void joyCallback(const sensor_msgs::Joy::ConstPtr& msg){
     }
 
     if (msg->buttons[7]){
-        ROS_INFO("[JOYPAD] starting autonomous driving");
+        if(autonomous_active){
+             ROS_INFO("[JOYPAD] stopping autonomous driving");
+            sandwich::StopNode srv;
+            srv.request.node_name = "cheese_ad";
+            nodestop_client.call(srv);
+            srv.request.node_name = "segnet";
+            nodestop_client.call(srv);
+            autonomous_active = false;
+        }else{
+            ROS_INFO("[JOYPAD] starting autonomous driving");
+            sandwich::LaunchNode srv;
+            srv.request.package_name = "sandwich_autonomous";
+            srv.request.file_name = "sandwich_auto.launch";
+            nodestart_client.call(srv);
+            autonomous_active = true;
+        }
     }
 
     L_GAIN = 0.3;
@@ -66,6 +87,10 @@ int main(int argc, char** argv)
     
     stopclient = nh.serviceClient<std_srvs::Empty>("stop_motors");
 
+    nodestart_client = nh.serviceClient<sandwich::LaunchNode>("launch_node");
+    nodestop_client = nh.serviceClient<sandwich::StopNode>("stop_node");
+
+    
     ros::Rate loop_rate(50);
 
     while(ros::ok()){

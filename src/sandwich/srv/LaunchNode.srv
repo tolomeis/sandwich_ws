@@ -1,0 +1,6 @@
+# Start Node or launch files
+
+string package_name
+string file_name
+---
+bool ret
