@@ -42,7 +42,13 @@ void joyCallback(const sensor_msgs::Joy::ConstPtr& msg){
         stopclient.call(srv);
         return;
     }
+    //LIGITECH + A: reboot
+    if (msg->buttons[6] && msg->buttons[2]){
+	system("reboot now");
+    }
 
+
+    // start
     if (msg->buttons[7]){
         if(autonomous_active){
              ROS_INFO("[JOYPAD] stopping autonomous driving");
